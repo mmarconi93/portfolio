@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Envyo — Portfolio (WebGL)</title>
-  <meta name="description" content="Futuristic portfolio with a real 3D shader orb." />
+  <title>Envyo — Portfolio (WebGL Pro)</title>
+  <meta name="description" content="Futuristic portfolio with a physically-based, reflective, animated orb." />
   <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -29,12 +29,9 @@
         <h1 class="mega">
           <span class="left">360 communic</span><span class="right">Experience</span>
         </h1>
-
-        <!-- WebGL canvas goes here -->
         <div class="orb-wrap">
           <canvas id="webgl"></canvas>
         </div>
-
         <button class="scroll-indicator" aria-label="Scroll to content" onclick="document.querySelector('#work').scrollIntoView({behavior:'smooth'})"><span class="dot"></span></button>
       </div>
     </section>
@@ -77,7 +74,6 @@
     </div>
   </footer>
 
-  <!-- Three.js from CDN -->
-  <script type="module" src="orb.js"></script>
+  <script type="module" src="orb-pbr.js"></script>
 </body>
 </html>
