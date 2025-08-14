@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Envyo — Portfolio (WebGL)</title>
+  <meta name="description" content="Futuristic portfolio with a real 3D shader orb." />
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="nav">
+    <button class="menu" aria-label="Open menu"><span></span><span></span><span></span></button>
+    <a class="brand" href="#">Envyo</a>
+    <nav class="links">
+      <a href="#work">work</a>
+      <a href="#about">about</a>
+      <a href="#contact" class="pill">brief us →</a>
+    </nav>
+  </header>
+
+  <main>
+    <section class="hero" id="home" aria-label="Hero">
+      <img class="contours" src="assets/wave-lines.svg" alt="" aria-hidden="true" />
+      <div class="hero-inner">
+        <h1 class="mega">
+          <span class="left">360 communic</span><span class="right">Experience</span>
+        </h1>
+
+        <!-- WebGL canvas goes here -->
+        <div class="orb-wrap">
+          <canvas id="webgl"></canvas>
+        </div>
+
+        <button class="scroll-indicator" aria-label="Scroll to content" onclick="document.querySelector('#work').scrollIntoView({behavior:'smooth'})"><span class="dot"></span></button>
+      </div>
+    </section>
+
+    <section id="work" class="section">
+      <div class="container">
+        <h2>Selected work</h2>
+        <div class="grid">
+          <article class="card"><h3>Neon Commerce</h3><p>Headless storefront with realtime personalization.</p><a class="text-link" href="#">Case study →</a></article>
+          <article class="card"><h3>Atlas Vision</h3><p>Ops analytics via custom CV models and dashboards.</p><a class="text-link" href="#">Case study →</a></article>
+          <article class="card"><h3>Helios OS</h3><p>Design system and developer portal for SaaS.</p><a class="text-link" href="#">Case study →</a></article>
+        </div>
+      </div>
+    </section>
+
+    <section id="about" class="section alt">
+      <div class="container">
+        <h2>About</h2>
+        <p>I craft interactive brand experiences and performant product interfaces. Currently available for select projects and collaborations.</p>
+      </div>
+    </section>
+
+    <section id="contact" class="section">
+      <div class="container">
+        <h2>Let’s build something remarkable</h2>
+        <form class="contact-form" onsubmit="event.preventDefault(); alert('Thanks! I will reply shortly.');">
+          <label><span>Name</span><input required placeholder="Your name"/></label>
+          <label><span>Email</span><input type="email" required placeholder="you@domain.com"/></label>
+          <label class="full"><span>Project brief</span><textarea rows="5" placeholder="Tell me about your project..."></textarea></label>
+          <button class="pill" type="submit">Send →</button>
+        </form>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="container footer-inner">
+      <span>© <span id="year"></span> Envyo</span>
+      <div class="social"><a href="#">IG</a><a href="#">FB</a><a href="#">IN</a></div>
+    </div>
+  </footer>
+
+  <!-- Three.js from CDN -->
+  <script type="module" src="orb.js"></script>
+</body>
+</html>
