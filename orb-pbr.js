@@ -1,4 +1,4 @@
-// @ts-nocheck  // keeps VS Code from trying to parse GLSL injections as JS
+// @ts-nocheck  // keeps VS Code from parsing GLSL injections as JS
 
 import * as THREE from 'https://unpkg.com/three@0.160.0/build/three.module.js';
 import { RoomEnvironment } from 'https://unpkg.com/three@0.160.0/examples/jsm/environments/RoomEnvironment.js';
@@ -6,29 +6,37 @@ import { EffectComposer } from 'https://unpkg.com/three@0.160.0/examples/jsm/pos
 import { RenderPass } from 'https://unpkg.com/three@0.160.0/examples/jsm/postprocessing/RenderPass.js';
 import { UnrealBloomPass } from 'https://unpkg.com/three@0.160.0/examples/jsm/postprocessing/UnrealBloomPass.js';
 
-const canvas = document.getElementById('webgl');
+const canvas = /** @type {HTMLCanvasElement|null} */ (
+  document.getElementById('webgl')
+);
+if (!canvas) {
+  console.error('Canvas #webgl not found');
+}
+
+/* ---------- Renderer ---------- */
 const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
 renderer.outputColorSpace = THREE.SRGBColorSpace;
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
-renderer.toneMappingExposure = 1.25;            // punchier highlights
-renderer.physicallyCorrectLights = true;        // better falloff
+renderer.toneMappingExposure = 1.25;         // punchier highlights
+renderer.physicallyCorrectLights = true;     // better falloff
 
+/* ---------- Scene & Camera ---------- */
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(35, 1, 0.1, 100);
 camera.position.set(0, 0, 6);
 scene.add(camera);
 
-// === Environment reflections (no external HDRI needed) ===
+/* ---------- Environment reflections (no external HDRI needed) ---------- */
 const pmrem = new THREE.PMREMGenerator(renderer);
 scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.05).texture;
 scene.background = null;
 
-// === Lights (cool white rim + moving purple hotspot + cool blue fill) ===
+/* ---------- Lights (cool rim + moving purple hotspot + blue fill) ---------- */
 const rim = new THREE.DirectionalLight(0xffffff, 2.2);
 rim.position.set(-3, 4, 5);
 scene.add(rim);
 
-const purple = new THREE.PointLight(0x8a2bff, 28, 12, 2); // animated below
+const purple = new THREE.PointLight(0x8a2bff, 28, 12, 2);
 purple.position.set(2.5, -0.8, 3.2);
 scene.add(purple);
 
@@ -36,15 +44,14 @@ const blueFill = new THREE.PointLight(0x2244ff, 8, 10, 2);
 blueFill.position.set(-2.2, -1.4, 2.0);
 scene.add(blueFill);
 
-// === Geometry ===
+/* ---------- Geometry & Material ---------- */
 const geometry = new THREE.IcosahedronGeometry(2.2, 7);
 
-// === Physical material tuned for glossy, reflective plastic-metal look ===
 const material = new THREE.MeshPhysicalMaterial({
   color: new THREE.Color(0x0a0b2a),        // deep navy base
   metalness: 1.0,
   roughness: 0.08,
-  envMapIntensity: 1.85,                   // stronger reflections
+  envMapIntensity: 1.85,
   clearcoat: 1.0,
   clearcoatRoughness: 0.04,
   sheen: 0.8,
@@ -55,11 +62,11 @@ const material = new THREE.MeshPhysicalMaterial({
   emissiveIntensity: 0.06
 });
 
-// === Animated vertex displacement while keeping full PBR shading ===
+/* ---------- Animated vertex displacement while keeping PBR shading ---------- */
 const uniforms = {
   uTime: { value: 0 },
-  uAmp:  { value: 0.28 },  // displacement amplitude (higher = more blobby)
-  uFreq: { value: 1.1 }    // noise frequency (higher = more ripples)
+  uAmp:  { value: 0.28 },  // amplitude (raise for more blob)
+  uFreq: { value: 1.1 }    // frequency (raise for more ripples)
 };
 
 material.onBeforeCompile = (shader) => {
@@ -106,11 +113,14 @@ material.onBeforeCompile = (shader) => {
       vec3 p1 = vec3(a1.xy,h.y);
       vec3 p2 = vec3(a0.zw,h.z);
       vec3 p3 = vec3(a1.zw,h.w);
-      vec4 norm = taylorInvSqrt(vec4(dot(p0,p0), dot(p1,p1), dot(p2,p2), dot(p3,p3)));
+      vec4 norm = taylorInvSqrt(vec4(dot(p0,p0), dot(p1,p1),
+                                     dot(p2,p2), dot(p3,p3)));
       p0 *= norm.x; p1 *= norm.y; p2 *= norm.z; p3 *= norm.w;
-      vec4 m = max(0.6 - vec4(dot(x0,x0), dot(x1,x1), dot(x2,x2), dot(x3,x3)), 0.0);
+      vec4 m = max(0.6 - vec4(dot(x0,x0), dot(x1,x1),
+                              dot(x2,x2), dot(x3,x3)), 0.0);
       m = m*m;
-      return 42.0 * dot(m*m, vec4(dot(p0,x0), dot(p1,x1), dot(p2,x2), dot(p3,x3)));
+      return 42.0 * dot(m*m, vec4(dot(p0,x0), dot(p1,x1),
+                                  dot(p2,x2), dot(p3,x3)));
     }
   `;
 
@@ -131,7 +141,7 @@ material.onBeforeCompile = (shader) => {
     `);
 };
 
-// === Mesh + soft halo ===
+/* ---------- Mesh + halo ---------- */
 const orb = new THREE.Mesh(geometry, material);
 scene.add(orb);
 
@@ -141,13 +151,13 @@ const halo = new THREE.Mesh(
 );
 scene.add(halo);
 
-// === Post-processing bloom ===
+/* ---------- Postprocessing ---------- */
 const composer = new EffectComposer(renderer);
 composer.addPass(new RenderPass(scene, camera));
 const bloom = new UnrealBloomPass(new THREE.Vector2(1024, 1024), 1.15, 0.85, 0.18);
 composer.addPass(bloom);
 
-// === Resize ===
+/* ---------- Resize ---------- */
 function resize() {
   const w = canvas.clientWidth;
   const h = canvas.clientHeight;
@@ -162,25 +172,24 @@ function resize() {
 }
 window.addEventListener('resize', resize);
 
-// === Mouse parallax ===
+/* ---------- Parallax ---------- */
 const wrap = document.querySelector('.orb-wrap');
 let targetX = 0, targetY = 0;
-window.addEventListener('mousemove', (e)=>{
+window.addEventListener('mousemove', (e) => {
   const r = wrap.getBoundingClientRect();
-  const dx = (e.clientX - (r.left + r.width/2)) / r.width;
-  const dy = (e.clientY - (r.top + r.height/2)) / r.height;
+  const dx = (e.clientX - (r.left + r.width / 2)) / r.width;
+  const dy = (e.clientY - (r.top + r.height / 2)) / r.height;
   targetX = -dy * 0.5;
   targetY =  dx * 0.5;
 });
 
-// === Animate ===
+/* ---------- Animate ---------- */
 let t = 0;
-function tick(){
-  resize();
+function tick() {
   t += 0.016;
   uniforms.uTime.value = t;
 
-  // Orbit the purple hotspot to create those rolling speculars
+  // rolling highlight
   purple.position.x = Math.cos(t * 0.7) * 2.6;
   purple.position.y = Math.sin(t * 0.9) * 1.4 - 0.3;
   purple.position.z = 2.8 + Math.sin(t * 0.5) * 0.4;
@@ -192,9 +201,13 @@ function tick(){
   composer.render();
   requestAnimationFrame(tick);
 }
-tick();
 
-// (Optional) footer year utility
-document.addEventListener('DOMContentLoaded', ()=>{
-  const y = document.getElementById('year'); if (y) y.textContent = new Date().getFullYear();
+/* Kick things off: ensure size before first frame */
+resize();
+requestAnimationFrame(tick);
+
+/* Optional footer year */
+document.addEventListener('DOMContentLoaded', () => {
+  const y = document.getElementById('year');
+  if (y) y.textContent = new Date().getFullYear();
 });
